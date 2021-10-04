@@ -15,11 +15,12 @@ import imaplib
 sys.tracebacklimit = 0
 
 
-def send_new_mail():
+def send_new_mail(date):
     logger.info("Main thread name: {}"
                 .format(threading.current_thread().name))
     rcpt_to = SmtpConfig.rcpt_to.split(",")
-    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload)
+    time.sleep(3)
+    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(date))
 
 
 def imap_add_message_to_sent():
@@ -72,9 +73,10 @@ async def main(number_of_message: int, func, folder=None):
 
     executor = None
     if number_of_message > 0:
-        executor = ThreadPoolExecutor(max_workers=number_of_message)
+        executor = ThreadPoolExecutor(max_workers=1)
+    
     for _ in range(number_of_message):
-        loop.run_in_executor(executor, func)
+        loop.run_in_executor(executor, func, time.time())
 
 
 if __name__ == '__main__':
