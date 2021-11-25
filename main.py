@@ -11,16 +11,16 @@ from src.configuration.smtpconfig import SmtpConfig
 from src.configuration.imapconfig import ImapConfig
 from concurrent.futures import ThreadPoolExecutor
 import imaplib
+imaplib._MAXLINE = 4000000
 
 sys.tracebacklimit = 0
 
 
-def send_new_mail(date):
+def send_new_mail(date, numb):
     logger.info("Main thread name: {}"
                 .format(threading.current_thread().name))
     rcpt_to = SmtpConfig.rcpt_to.split(",")
-    time.sleep(3)
-    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(date))
+    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(numb, date))
 
 
 def imap_add_message_to_sent():
@@ -73,10 +73,10 @@ async def main(number_of_message: int, func, folder=None):
 
     executor = None
     if number_of_message > 0:
-        executor = ThreadPoolExecutor(max_workers=1)
+        executor = ThreadPoolExecutor(max_workers=50)
     
-    for _ in range(number_of_message):
-        loop.run_in_executor(executor, func, time.time())
+    for i in range(number_of_message):
+        loop.run_in_executor(executor, func, time.time(), i)
 
 
 if __name__ == '__main__':
