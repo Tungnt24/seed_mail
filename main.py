@@ -1,5 +1,7 @@
 import sys
 import time
+from datetime import datetime
+import uuid
 
 import asyncio
 import threading
@@ -15,12 +17,13 @@ import imaplib
 sys.tracebacklimit = 0
 
 
-def send_new_mail(date):
+def send_new_mail(num, date):
     logger.info("Main thread name: {}"
                 .format(threading.current_thread().name))
     rcpt_to = SmtpConfig.rcpt_to.split(",")
-    time.sleep(3)
-    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(date))
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(num, num, current_time))
 
 
 def imap_add_message_to_sent():
@@ -73,10 +76,10 @@ async def main(number_of_message: int, func, folder=None):
 
     executor = None
     if number_of_message > 0:
-        executor = ThreadPoolExecutor(max_workers=1)
+        executor = ThreadPoolExecutor(max_workers=50)
     
-    for _ in range(number_of_message):
-        loop.run_in_executor(executor, func, time.time())
+    for i in range(number_of_message):
+        loop.run_in_executor(executor, func, i, int(time.time()))
 
 
 if __name__ == '__main__':
