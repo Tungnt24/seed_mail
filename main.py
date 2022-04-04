@@ -11,7 +11,9 @@ from src.configuration.smtpconfig import SmtpConfig
 from src.configuration.imapconfig import ImapConfig
 from concurrent.futures import ThreadPoolExecutor
 import imaplib
-imaplib._MAXLINE = 4000000
+from datetime import datetime
+
+imaplib._MAXLINE = 900000000000000000
 
 sys.tracebacklimit = 0
 
@@ -20,7 +22,9 @@ def send_new_mail(date, numb):
     logger.info("Main thread name: {}"
                 .format(threading.current_thread().name))
     rcpt_to = SmtpConfig.rcpt_to.split(",")
-    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(numb, date))
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    smtp.send_mail(SmtpConfig.user, rcpt_to, SmtpConfig.payload.format(current_time, numb, now))
 
 
 def imap_add_message_to_sent():
@@ -69,11 +73,11 @@ def get_arg(send, add, new, delete):
 async def main(number_of_message: int, func, folder=None):
     loop = asyncio.get_running_loop()
     if folder:
-        loop.run_in_executor(None, func, folder)
+        loop.run_in_executor(ThreadPoolExecutor(max_workers=1), func, folder)
 
     executor = None
     if number_of_message > 0:
-        executor = ThreadPoolExecutor(max_workers=50)
+        executor = ThreadPoolExecutor(max_workers=1)
     
     for i in range(number_of_message):
         loop.run_in_executor(executor, func, time.time(), i)
