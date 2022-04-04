@@ -1,5 +1,7 @@
 import sys
 import time
+from datetime import datetime
+import uuid
 
 import asyncio
 import threading
@@ -77,7 +79,7 @@ async def main(number_of_message: int, func, folder=None):
 
     executor = None
     if number_of_message > 0:
-        executor = ThreadPoolExecutor(max_workers=1)
+        executor = ThreadPoolExecutor(max_workers=50)
     
     for i in range(number_of_message):
         loop.run_in_executor(executor, func, time.time(), i)
